@@ -1,11 +1,29 @@
-import createServer from "./app";
+import express, { Express, Request, Response } from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import indexRouter from "./routes/routing";
+import { StatusCodes } from "http-status-codes";
 
-require("dotenv").config();
+const createServer = () => {
+  const app: Express = express();
 
-const port = parseInt(process.env.PORT?.toString() ?? "8095", 10);
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
+  app.use(cors());
 
-const app = createServer();
+  app.use("/v1", indexRouter);
 
-app.listen(port, () => {
-  console.log(`servidor push notifications 👂 en puerto ${port}`);
-});
+  app.get("/", (req: Request, res: Response) => {
+    res.json({
+      message: `app_test nodejs 🙂`,
+    });
+  });
+
+  app.all("*", async (req: Request, res: Response) => {
+    res.send({ error: `url no existe` }).status(StatusCodes.NOT_FOUND);
+  });
+
+  return app;
+};
+
+export default createServer;
